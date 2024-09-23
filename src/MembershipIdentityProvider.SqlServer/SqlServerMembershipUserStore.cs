@@ -1,22 +1,18 @@
-﻿using Dapper;
+﻿using System.Security.Claims;
+using Dapper;
 using MembershipIdentityProvider.Code.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 
 namespace MembershipIdentityProvider.SqlServer
 {
-    public class SqlServerMembershipUserStore<TUser> : IUserStore<TUser>, IUserPasswordStore<TUser>, IUserRoleStore<TUser>
-        where TUser : MembershipUser
+    public class SqlServerMembershipUserStore<TUser>(string? connectionString) 
+        : IUserPasswordStore<TUser>, IUserRoleStore<TUser>, IUserClaimStore<TUser>
+		where TUser : MembershipUser
     {
-        private readonly string? _connectionString;
 
-        public SqlServerMembershipUserStore(string? connectionString) 
-        {
-            _connectionString = connectionString;
-        }
-
-        #region IUserStore
-        public Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken)
+		#region IUserStore
+		public Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -28,13 +24,24 @@ namespace MembershipIdentityProvider.SqlServer
 
         public void Dispose()
         {
-            
+            Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			// Cleanup
+		}
+
+        ~SqlServerMembershipUserStore()
+        {
+            Dispose(false);
         }
 
-        public async Task<TUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+		public async Task<TUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
             TUser user;
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(connectionString))
             {
                 user = await conn.QueryFirstOrDefaultAsync<TUser>(
                     @"select top 1 mbm.UserId as Id, Username, lower(Username) as NormalizedUserName, Password as PasswordHash, PasswordSalt, Email, lower(Email) as NormalizedEmail, IsApproved, IsLockedOut, CreateDate, LastLoginDate, 
@@ -50,7 +57,7 @@ namespace MembershipIdentityProvider.SqlServer
         public async Task<TUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
             TUser user;
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(connectionString))
             {
                 user = await conn.QueryFirstOrDefaultAsync<TUser>(
                     @"select top 1 mbm.UserId as Id, Username, lower(Username) as NormalizedUserName, Password as PasswordHash, PasswordSalt, Email, lower(Email) as NormalizedEmail, IsApproved, IsLockedOut, CreateDate, LastLoginDate, LastPasswordChangedDate, 
@@ -122,7 +129,7 @@ namespace MembershipIdentityProvider.SqlServer
 
         public async Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken)
         {
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(connectionString))
             {
                 var list = await conn.QueryAsync<string>(@"select RoleName from aspnet_roles
                                                where RoleId in (select RoleId from aspnet_UsersInRoles where UserId = @UserId)",
@@ -133,18 +140,52 @@ namespace MembershipIdentityProvider.SqlServer
             }
         }
 
-        public Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken)
+        public async Task<bool> IsInRoleAsync(TUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
+			using var conn = new SqlConnection(connectionString);
+			var queryResult = await conn.ExecuteScalarAsync<int> (
+                sql: @"select count(*) from aspnet_UsersInRoles uir 
+                       inner join aspnet_roles r on r.RoleId = uir.RoleId 
+                       where uir.UserId = @UserId and r.RoleName = @RoleName",
+				commandType: System.Data.CommandType.Text,
+				param: new { 
+                UserId = user.Id,
+                RoleName = roleName
+            });
+            
+            return queryResult > 0;
+		}
 
         public Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
-        #endregion
 
+		public async Task<IList<Claim>> GetClaimsAsync(TUser user, CancellationToken cancellationToken)
+		{
+            var roles = await GetRolesAsync(user, cancellationToken);
+            return roles.Select(x => new Claim(ClaimTypes.Role, x)).ToList();
+		}
 
+		public Task AddClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
 
-    }
+		public Task ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+		#endregion
+	}
 }
