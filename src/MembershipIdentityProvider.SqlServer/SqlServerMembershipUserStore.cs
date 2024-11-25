@@ -44,7 +44,7 @@ namespace MembershipIdentityProvider.SqlServer
             using (var conn = new SqlConnection(connectionString))
             {
                 user = await conn.QueryFirstOrDefaultAsync<TUser>(
-                    @"select top 1 mbm.UserId as Id, Username, lower(Username) as NormalizedUserName, Password as PasswordHash, PasswordSalt, Email, lower(Email) as NormalizedEmail, IsApproved, IsLockedOut, CreateDate, LastLoginDate, 
+					@"select top 1 mbm.UserId as Id, Username, lower(Username) as NormalizedUserName, Password as PasswordHash, PasswordFormat, PasswordSalt, Email, lower(Email) as NormalizedEmail, IsApproved, IsLockedOut, CreateDate, LastLoginDate, 
                       LastPasswordChangedDate, LastLockoutDate, FailedPasswordAttemptCount, FailedPasswordAttemptWindowStart, FailedPasswordAnswerAttemptCount, FailedPasswordAnswerAttemptWindowStart, Comment
                       from aspnet_users u inner join aspnet_membership mbm on u.UserId = mbm.UserId where u.UserId = @UserId",
                     param: new { UserId = Guid.Parse(userId) },
@@ -60,7 +60,7 @@ namespace MembershipIdentityProvider.SqlServer
             using (var conn = new SqlConnection(connectionString))
             {
                 user = await conn.QueryFirstOrDefaultAsync<TUser>(
-                    @"select top 1 mbm.UserId as Id, Username, lower(Username) as NormalizedUserName, Password as PasswordHash, PasswordSalt, Email, lower(Email) as NormalizedEmail, IsApproved, IsLockedOut, CreateDate, LastLoginDate, LastPasswordChangedDate, 
+                    @"select top 1 mbm.UserId as Id, Username, lower(Username) as NormalizedUserName, Password as PasswordHash, PasswordFormat, PasswordSalt, Email, lower(Email) as NormalizedEmail, IsApproved, IsLockedOut, CreateDate, LastLoginDate, LastPasswordChangedDate, 
                       LastLockoutDate, FailedPasswordAttemptCount, FailedPasswordAttemptWindowStart, FailedPasswordAnswerAttemptCount, FailedPasswordAnswerAttemptWindowStart, Comment
                       from aspnet_users u inner join aspnet_membership mbm on u.UserId = mbm.UserId where u.UserName = @UserName",
                     param: new { UserName = normalizedUserName.ToLower() },

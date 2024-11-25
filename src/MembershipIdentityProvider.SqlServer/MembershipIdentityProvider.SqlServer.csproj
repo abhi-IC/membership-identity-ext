@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<PackageProjectUrl>https://github.com/gldmelo/membership-identity</PackageProjectUrl>
-	<AssemblyVersion>1.1</AssemblyVersion>
+	<AssemblyVersion>1.2</AssemblyVersion>
 	<Version>$(AssemblyVersion)</Version>
 	<FileVersion>$(AssemblyVersion)</FileVersion>
 	<PackageTags>membership;identity;asp.net;asp.net membership;asp.net core membership</PackageTags>
@@ -14,7 +14,7 @@
 	<Copyright>Guilherme Melo</Copyright>
 	<Description>A library to allow using asp.net Identity Core backed with an older set of tables from asp.net Membership (shipped with .NET Framework)</Description>
 	<RepositoryType>git</RepositoryType>
-	<PackageReleaseNotes>First version. Allows for Login/Logout using the Sql Server provider with provided Roles</PackageReleaseNotes>
+	<PackageReleaseNotes>Allows for Login/Logout using the Sql Server provider with provided Roles</PackageReleaseNotes>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	<Title>MembershipIdentityProvider.SqlServer</Title>
@@ -23,12 +23,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.28" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
   </ItemGroup>
 
   <ItemGroup>
-	<None Include="readme.md" Pack="true" PackagePath="\"/>
+	<None Include="readme.md" Pack="true" PackagePath="\" />
     <ProjectReference Include="..\MembershipIdentityProvider\MembershipIdentityProvider.csproj" />
   </ItemGroup>
 

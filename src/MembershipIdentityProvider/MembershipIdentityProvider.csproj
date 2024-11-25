@@ -8,14 +8,14 @@
 	<IsPackable>true</IsPackable>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<PackageProjectUrl>https://github.com/gldmelo/membership-identity</PackageProjectUrl>
-	<AssemblyVersion>0.1</AssemblyVersion>
-	<FileVersion>0.1</FileVersion>
+	<AssemblyVersion>0.2</AssemblyVersion>
+	<FileVersion>0.2</FileVersion>
 	<PackageTags>membership;identity;asp.net;asp.net membership;asp.net core membership</PackageTags>
 	<RepositoryUrl>https://github.com/gldmelo/membership-identity</RepositoryUrl>
 	<Copyright>Guilherme Melo</Copyright>
 	<Description>A library to allow using asp.net Identity Core backed with an older set of tables from asp.net Membership (shipped with .NET Framework)</Description>
 	<RepositoryType>git</RepositoryType>
-	<PackageReleaseNotes>First version. Base classes to use with a Provider.</PackageReleaseNotes>
+	<PackageReleaseNotes>Base classes to use with a Provider.</PackageReleaseNotes>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	<Title>MembershipIdentityProvider</Title>
