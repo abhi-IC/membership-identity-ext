@@ -8,8 +8,9 @@
 	<IsPackable>true</IsPackable>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<PackageProjectUrl>https://github.com/gldmelo/membership-identity</PackageProjectUrl>
-	<AssemblyVersion>0.2</AssemblyVersion>
-	<FileVersion>0.2</FileVersion>
+	<AssemblyVersion>2.0</AssemblyVersion>
+	<Version>$(AssemblyVersion)</Version>
+	<FileVersion>$(AssemblyVersion)</FileVersion>
 	<PackageTags>membership;identity;asp.net;asp.net membership;asp.net core membership</PackageTags>
 	<RepositoryUrl>https://github.com/gldmelo/membership-identity</RepositoryUrl>
 	<Copyright>Guilherme Melo</Copyright>

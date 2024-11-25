@@ -1,13 +1,19 @@
+using MembershipIdentityProvider.Code;
 using MembershipIdentityProvider.Code.Identity;
 using MembershipIdentityProvider.SqlServer.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 // Add services to the container.
+builder.Services.AddOptions<MembershipSettings>().BindConfiguration(nameof(MembershipSettings));
 
 // Membership Identity setup
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddMembershipIdentitySqlServer<MembershipUser, MembershipRole>(connectionString);
+var membershipSettings = new MembershipSettings();
+builder.Configuration.GetSection("MembershipSettings").Bind(membershipSettings);
+
+builder.Services.AddMembershipIdentitySqlServer<MembershipUser, MembershipRole>(connectionString, membershipSettings);
 /**************************************************************/
 
 builder.Services.AddControllersWithViews();
@@ -37,4 +43,4 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapDefaultControllerRoute();
 
-app.Run();
+await app.RunAsync();

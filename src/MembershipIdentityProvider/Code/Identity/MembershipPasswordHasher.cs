@@ -24,5 +24,22 @@ namespace MembershipIdentityProvider.Code.Identity
 				_ => PasswordVerificationResult.Failed
 			};
 
+		public static string GenerateSalt()
+		{
+			byte[] buf = new byte[16];
+			new RNGCryptoServiceProvider().GetBytes(buf);
+
+			return Convert.ToBase64String(buf);
+		}
+
+		public static string GetPassword(TUser user, int passwordFormat, string password)
+		{
+			return passwordFormat switch
+			{
+				0 => password,
+				1 => new MembershipPasswordHasher<TUser>().HashPassword(user, password),
+				_ => password
+			};
+		}
 	}
 }

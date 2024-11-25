@@ -6,8 +6,14 @@ namespace MembershipIdentityProvider.Code.Identity
     {
         public bool IsApproved { get; set; }
         public DateTime LastActivityDate { get; set; }
-        public int PasswordFormat { get; set; }
+		
+        public string Password { get; set; }
+		public int PasswordFormat { get; set; }
 		public string PasswordSalt { get; set; } = string.Empty;
+
+		public string PasswordQuestion { get; set; } = string.Empty;
+		public string PasswordAnswer { get; set; } = string.Empty;
+
 		public DateTime CreateDate { get; set; }
         public DateTime LastLoginDate { get; set; }
         public DateTime LastPasswordChangedDate { get; set; }
@@ -17,6 +23,7 @@ namespace MembershipIdentityProvider.Code.Identity
         public int FailedPasswordAnswerAttemptCount { get; set; }
         public DateTime FailedPasswordAnswerAttemptWindowStart { get; set; }
         public string Comment { get; set; } = string.Empty;
+        public bool IsLockedOut { get; set; }
 
-    }
+	}
 }

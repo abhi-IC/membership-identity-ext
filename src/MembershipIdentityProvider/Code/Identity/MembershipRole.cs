@@ -2,11 +2,8 @@
 
 namespace MembershipIdentityProvider.Code.Identity
 {
-    public class MembershipRole : IdentityRole
+    public class MembershipRole : IdentityRole<Guid>
     {
-        public string RoleId { get; set; }
-        public string RoleName { get; set; }
-        public string LoweredRoleName { get; set; }
         public string Description { get; set; }
     }
 }

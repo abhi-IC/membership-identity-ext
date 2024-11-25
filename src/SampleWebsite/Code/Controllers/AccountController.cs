@@ -1,25 +1,24 @@
-﻿using MembershipIdentityProvider.Code.Identity;
+﻿using MembershipIdentityProvider.Code;
+using MembershipIdentityProvider.Code.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SampleWebsite.Code.Models;
 
 namespace SampleWebsite.Code.Controllers
 {
     [Authorize]
-    public class AccountController : Controller
+    public class AccountController(
+        UserManager<MembershipUser> userManager, 
+        SignInManager<MembershipUser> signInManager,
+        RoleManager<MembershipRole> roleManager,
+        IOptions<MembershipSettings> membershipSettings) : Controller
     {
-        private readonly UserManager<MembershipUser> _userManager;
-        private readonly SignInManager<MembershipUser> _signInManager;
+        private MembershipSettings MembershipSettings { get; } = membershipSettings.Value;
 
-        public AccountController(UserManager<MembershipUser> userManager, SignInManager<MembershipUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
-        [HttpGet]
+		[HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
@@ -40,7 +39,7 @@ namespace SampleWebsite.Code.Controllers
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(model.UserLogin, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await signInManager.PasswordSignInAsync(model.UserLogin, model.Password, model.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     //_logger.LogInformation("User logged in.");
@@ -77,6 +76,7 @@ namespace SampleWebsite.Code.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -85,8 +85,16 @@ namespace SampleWebsite.Code.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new MembershipUser { UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
+                var user = new MembershipUser { 
+                    UserName = model.UserLogin, 
+                    Email = model.Email,
+                    Password = model.Password,
+                    PasswordFormat = MembershipSettings.PasswordFormat,
+					PasswordQuestion = model.PasswordQuestion,
+					PasswordAnswer = model.PasswordAnswer,
+				};
+
+                var result = await userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     //_logger.LogInformation("User created a new account with password.");
@@ -95,7 +103,7 @@ namespace SampleWebsite.Code.Controllers
                     //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
                     //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    await signInManager.SignInAsync(user, isPersistent: false);
                     //_logger.LogInformation("User created a new account with password.");
                     return RedirectToLocal(returnUrl);
                 }
@@ -106,11 +114,11 @@ namespace SampleWebsite.Code.Controllers
             return View(model);
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
+		//[HttpPost]
+		//[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Logout()
         {
-            await _signInManager.SignOutAsync();
+            await signInManager.SignOutAsync();
             //_logger.LogInformation("User logged out.");
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
@@ -143,6 +151,85 @@ namespace SampleWebsite.Code.Controllers
             }
         }
 
-        #endregion
-    }
+		#endregion
+
+		#region Some methods to exemplify the use of the MembershipIdentityProvider
+		public async Task<IActionResult> DeleteUser()
+		{
+			var user = await userManager.FindByNameAsync(User.Identity!.Name!);
+			var result = await userManager.DeleteAsync(user!);
+
+			if (result.Succeeded)
+			{
+				return Content("user is deleted");
+			}
+			AddErrors(result);
+
+			return View();
+		}
+
+		/// <summary>
+		/// Action for Testing
+		/// </summary>
+		/// <returns></returns>
+		public async Task<IActionResult> CreateRole()
+		{
+			var role = new MembershipRole
+			{
+				Name = "TestingRole",
+				Description = "A new role"
+			};
+			var result = await roleManager.CreateAsync(role);
+			if (result.Succeeded)
+			{
+				//_logger.LogInformation("User created a new account with password.");
+				return RedirectToAction(nameof(HomeController.Index), "Home");
+			}
+			AddErrors(result);
+
+			return View();
+		}
+
+		public async Task<IActionResult> DeleteRole()
+		{
+			var role = await roleManager.FindByNameAsync("TestingRole");
+			var result = await roleManager.DeleteAsync(role!);
+
+			if (result.Succeeded)
+			{
+				return RedirectToAction(nameof(HomeController.Index), "Home");
+			}
+			AddErrors(result);
+
+			return View();
+		}
+
+		public async Task<IActionResult> AssignRoleToUser()
+		{
+			var user = await userManager.FindByNameAsync(User.Identity!.Name!);
+			await userManager.AddToRoleAsync(user!, "TestingRole");
+
+			if (await userManager.IsInRoleAsync(user!, "TestingRole"))
+			{
+				return Content("user is in role");
+			}
+
+			return View();
+		}
+
+		public async Task<IActionResult> RemoveUserFromRole()
+		{
+			var user = await userManager.FindByNameAsync(User.Identity!.Name!);
+			await userManager.RemoveFromRoleAsync(user!, "TestingRole");
+
+			if (!await userManager.IsInRoleAsync(user!, "TestingRole"))
+			{
+				return Content("user isn't in role");
+			}
+
+			return View();
+		}
+
+		#endregion
+	}
 }
