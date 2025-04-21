@@ -288,11 +288,16 @@ namespace MembershipIdentityProvider.SqlServer
 			try
 			{
 				// Update aspnet_users table
-				var userUpdateResult = await conn.ExecuteAsync(@"update aspnet_users set UserName = @UserName, LoweredUserName = @LoweredUserName where UserId = @UserId",
+				var userUpdateResult = await conn.ExecuteAsync(@"update aspnet_users set 
+					UserName = @UserName, 
+					LoweredUserName = @LoweredUserName,
+					LastActivityDate = @LastActivityDate,
+					where UserId = @UserId",
 					param: new
 					{
 						UserName = user.UserName,
 						LoweredUserName = user.UserName?.ToLower(),
+						LastActivityDate = DateTime.UtcNow,
 						UserId = user.Id
 					},
 					transaction: transaction,
@@ -305,14 +310,7 @@ namespace MembershipIdentityProvider.SqlServer
 						  LoweredEmail = @LoweredEmail, 
 						  Password = @PasswordHash, 
 						  IsApproved = @IsApproved, 
-						  IsLockedOut = @IsLockedOut, 
 						  LastLoginDate = @LastLoginDate, 
-						  LastPasswordChangedDate = @LastPasswordChangedDate, 
-						  LastLockoutDate = @LastLockoutDate, 
-						  FailedPasswordAttemptCount = @FailedPasswordAttemptCount, 
-						  FailedPasswordAttemptWindowStart = @FailedPasswordAttemptWindowStart, 
-						  FailedPasswordAnswerAttemptCount = @FailedPasswordAnswerAttemptCount, 
-						  FailedPasswordAnswerAttemptWindowStart = @FailedPasswordAnswerAttemptWindowStart, 
 						  Comment = @Comment 
 						where UserId = @UserId",
 					param: new
@@ -321,14 +319,7 @@ namespace MembershipIdentityProvider.SqlServer
 						LoweredEmail = user.Email?.ToLower(),
 						PasswordHash = user.PasswordHash,
 						IsApproved = user.IsApproved,
-						IsLockedOut = user.IsLockedOut,
-						LastLoginDate = user.LastLoginDate,
-						LastPasswordChangedDate = user.LastPasswordChangedDate,
-						LastLockoutDate = user.LastLockoutDate,
-						FailedPasswordAttemptCount = user.FailedPasswordAttemptCount,
-						FailedPasswordAttemptWindowStart = user.FailedPasswordAttemptWindowStart,
-						FailedPasswordAnswerAttemptCount = user.FailedPasswordAnswerAttemptCount,
-						FailedPasswordAnswerAttemptWindowStart = user.FailedPasswordAnswerAttemptWindowStart,
+						LastLoginDate = DateTime.UtcNow,
 						Comment = user.Comment,
 						UserId = user.Id
 					},
