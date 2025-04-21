@@ -15,21 +15,31 @@ It should work out-of-the-box by configuring the service in your Program.cs file
 ```
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
          ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddMembershipIdentitySqlServer<MembershipUser, MembershipRole>(connectionString);
+var membershipSettings = new MembershipSettings();
+builder.Configuration.GetSection("MembershipSettings").Bind(membershipSettings);
+builder.Services.AddMembershipIdentitySqlServer<MembershipUser, MembershipRole>(connectionString, membershipSettings);
+builder.Services.AddOptions<MembershipSettings>().BindConfiguration(nameof(MembershipSettings));
 ```
 
-Create an `appsettings.json` file in the root of the project and create a `DefaultConnection` under `ConnectionStrings`:
+Create an `appsettings.json` file in the root of the project and create a `DefaultConnection` under `ConnectionStrings` and a MembershipSettings entry:
 
 ```{
   "ConnectionStrings": {
 	"DefaultConnection": "YOUR SQL SERVER CONNECTION STRING"
+  },
+  "MembershipSettings": {
+    "PasswordFormat": 1,
+    "ApplicationId": "YOUR ApplicationId Guid"
   }
 }
 ```
 
-**Please note that only a few features are available at this moment, which I may or may not implement in the future.**
+**The main features are implemented, such as:**
 * Login (from `aspnet_Membership` and `aspnet_users` tables)
 * Role support (from `aspnet_UserInRoles` and `aspnet_Roles` tables)
+* Create and Delete User using UserManager from IdentityCore (created users should be able to login from aspnet legacy membership too)
+* Create and Delete Roles using RoleManager from IdentityCore (See AccountController for samples of usage)
+* Add/Remove users from Roles using RoleManager
 * Currently only Sql Server is supported
 * Roles are treated as Claims
 * Currently there's only support for hashed passwords using the `HashAlgorithmName.SHA256` algorithm.
