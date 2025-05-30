@@ -47,7 +47,7 @@ namespace MembershipIdentityProvider.Code.Identity
 
     /* --This may be more appropriate. Needs To be Tested---
      
-    public class MembershipPasswordHasher2<TUser> : IPasswordHasher<TUser>
+    public class MembershipPasswordHasher<TUser> : IPasswordHasher<TUser>
         where TUser : MembershipUser
     {
         public string HashPassword(TUser user, string password)

@@ -129,6 +129,36 @@ namespace SampleWebsite.Code.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
+        {
+            var user = await userManager.FindByNameAsync(User.Identity!.Name!);
+            if (user == null)
+                return Unauthorized();
+
+            var result = await userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+
+            if (result.Succeeded)
+            {
+                await signInManager.RefreshSignInAsync(user);
+                return Ok("Password changed successfully.");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return BadRequest(ModelState);
+        }
+
         #region Helpers
 
         private void AddErrors(IdentityResult result)
