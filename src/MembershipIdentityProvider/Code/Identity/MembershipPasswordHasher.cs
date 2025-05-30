@@ -1,11 +1,13 @@
-﻿using System.Security.Cryptography;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MembershipIdentityProvider.Code.Identity
 {
 	public class MembershipPasswordHasher<TUser> : IPasswordHasher<TUser>
 		where TUser : MembershipUser
 	{
+
 		public string HashPassword(TUser user, string password)
 		{
 			var saltBytes = Convert.FromBase64String(user.PasswordSalt);
@@ -41,5 +43,63 @@ namespace MembershipIdentityProvider.Code.Identity
 				_ => password
 			};
 		}
-	}
+    }
+
+    /* --This may be more appropriate. Needs To be Tested---
+     
+    public class MembershipPasswordHasher2<TUser> : IPasswordHasher<TUser>
+        where TUser : MembershipUser
+    {
+        public string HashPassword(TUser user, string password)
+        {
+            // Legacy-compatible hash: SHA1(salt + Unicode(password))
+            byte[] saltBytes = Convert.FromBase64String(user.PasswordSalt);
+            byte[] passwordBytes = Encoding.Unicode.GetBytes(password); // Unicode = UTF-16LE
+
+            byte[] combined = new byte[saltBytes.Length + passwordBytes.Length];
+            Buffer.BlockCopy(saltBytes, 0, combined, 0, saltBytes.Length);
+            Buffer.BlockCopy(passwordBytes, 0, combined, saltBytes.Length, passwordBytes.Length);
+
+            using var sha1 = SHA1.Create();
+            byte[] hashBytes = sha1.ComputeHash(combined);
+            return Convert.ToBase64String(hashBytes);
+        }
+
+        public PasswordVerificationResult VerifyHashedPassword(TUser user, string hashedPassword, string providedPassword)
+        {
+            return user.PasswordFormat switch
+            {
+                0 => hashedPassword == providedPassword
+                    ? PasswordVerificationResult.Success
+                    : PasswordVerificationResult.Failed,
+
+                1 => hashedPassword == HashPassword(user, providedPassword)
+                    ? PasswordVerificationResult.Success
+                    : PasswordVerificationResult.Failed,
+
+                _ => PasswordVerificationResult.Failed
+            };
+        }
+
+        public static string GenerateSalt()
+        {
+            byte[] salt = new byte[16]; // 128-bit salt
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(salt);
+            return Convert.ToBase64String(salt);
+        }
+
+        public static string GetPassword(TUser user, int passwordFormat, string password)
+        {
+            return passwordFormat switch
+            {
+                0 => password,
+                1 => new MembershipPasswordHasher<TUser>().HashPassword(user, password),
+                _ => password
+            };
+        }
+    }
+    
+    */
+
 }
