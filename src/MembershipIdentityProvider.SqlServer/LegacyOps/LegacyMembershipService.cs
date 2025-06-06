@@ -19,6 +19,11 @@ namespace MembershipIdentityProvider.SqlServer.LegacyOps
         private readonly MembershipSettings _settings;
         private readonly string _connectionString;
 
+        public MembershipSettings MembershipSettings
+        {
+            get { return _settings; }
+        }
+
         public LegacyMembershipService(SqlServerMembershipUserStore<MembershipUser> userStore, MembershipSettings settings, string connectionString)
         {
             _userStore = userStore;
