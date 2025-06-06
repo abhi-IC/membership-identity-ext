@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MembershipIdentityProvider.Code;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,5 +13,7 @@ namespace MembershipIdentityProvider.SqlServer.LegacyOps
         Task<string?> ResetPasswordAsync(string username, string passwordAnswer, CancellationToken cancellationToken = default);
         Task<bool> ChangePasswordAsync(string username, string currentPassword, string newPassword, CancellationToken cancellationToken = default);
         Task<bool> ValidateUserAsync(string username, string password, CancellationToken cancellationToken = default);
+
+        MembershipSettings MembershipSettings { get; }
     }
 }
