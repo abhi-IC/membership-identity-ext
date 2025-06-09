@@ -139,5 +139,32 @@ namespace MembershipIdentityProvider.SqlServer.LegacyOps
 
             return string.Equals(hashedInput, user.PasswordHash, StringComparison.Ordinal);    
         }
+
+        public async Task<string[]> GetRolesForUserAsync(string username, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return Array.Empty<string>();
+
+            using var conn = new SqlConnection(_connectionString);
+            await conn.OpenAsync(cancellationToken);
+           
+             // Get roles
+             var roles = await conn.QueryAsync<string>(
+                                    @"SELECT r.RoleName
+                              FROM aspnet_Users u
+                              JOIN aspnet_UsersInRoles ur ON u.UserId = ur.UserId
+                              JOIN aspnet_Roles r ON ur.RoleId = r.RoleId
+                              WHERE LOWER(u.LoweredUserName) = LOWER(@UserName)
+                                AND u.ApplicationId = @AppId
+                                AND r.ApplicationId = @AppId
+                              ORDER BY r.RoleName",
+                new
+                {
+                    UserName = username,
+                    AppId = _settings.ApplicationId
+                });
+
+            return roles.ToArray();
+        }
     }
 }
