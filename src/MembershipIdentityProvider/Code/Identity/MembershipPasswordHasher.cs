@@ -45,7 +45,7 @@ namespace MembershipIdentityProvider.Code.Identity
 	//	}
     //}
 
-    /* --This may be more appropriate. Needs To be Tested---*/     
+    /* ---This may be more appropriate. Needs to be tested--- */     
     public class MembershipPasswordHasher<TUser> : IPasswordHasher<TUser>
         where TUser : MembershipUser
     {
