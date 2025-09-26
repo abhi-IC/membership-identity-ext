@@ -1,4 +1,6 @@
 ﻿
+using System.Globalization;
+
 namespace MembershipIdentityProvider.Code
 {
 	public class MembershipSettings
@@ -6,5 +8,7 @@ namespace MembershipIdentityProvider.Code
 		public Guid ApplicationId { get; set; }
 		public int PasswordFormat { get; set; }
         public int MaxInvalidPasswordAttempts { get; set; } //added
+
+		public string ConnectionString { get; set; } = string.Empty; //added
     }
 }
